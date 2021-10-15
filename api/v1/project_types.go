@@ -23,13 +23,133 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type PathFeature struct {
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	// Whether to enable vault secret creation and, if bindings are enabled, policies and user/group mappings
+	Vault bool `json:"vault,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	// Whether to enable git repository creation and, if bindings are enabled, user and group access management
+	Git bool `json:"git,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	// Whether to enable a namespace creation in the docker registry and, if bindings are enabled, user and group access management
+	Registry bool `json:"registry,omitempty"`
+}
+
+type ProjectPath struct {
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Pattern:=`^(?:[[:alnum:]-]+\/)+[[:alnum:]-]+$`
+	// The Path attribute should match the pattern ^(?:[[:alnum:]-]+\/)+[[:alnum:]-]+$ where the last [[:alnum:]-]+ is the identifier (e.g. group/sub-group/name)
+	Path string `json:"path"`
+
+	// +kubebuilder:validation:Optional
+	Features PathFeature `json:"features,omitempty"`
+}
+
+type BindingSubject struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Enum:=Group;User
+	Kind string `json:"kind"`
+}
+
+type BindingRole struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Enum:=ClusterRole;Role
+	Kind string `json:"kind"`
+}
+
+type BindingAccess struct {
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	Logging bool `json:"logging,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	Monitoring bool `json:"monitoring,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	Registry bool `json:"registry,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	Git bool `json:"git,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	Vault bool `json:"vault,omitempty"`
+}
+
+type EnvironmentBindings struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Enum:=Owner;Manager;Developer
+	Kind string `json:"kind"`
+
+	// +kubebuilder:validation:Optional
+	Access BindingAccess `json:"access,omitempty"`
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinItems:=1
+	Subjects []BindingSubject `json:"subjects"`
+
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinItems:=1
+	Roles []BindingRole `json:"roles"`
+}
+
+type EnvironmentTarget struct {
+	// +kubebuilder:validation:Required
+	Namespace string `json:"namespace"`
+
+	// +kubebuilder:validation:Required
+	Cluster string `json:"cluster"`
+}
+
+type ProjectEnvironment struct {
+	// +kubebuilder:validation:Required
+	// Each environment should contain a name. This name will be used when creating vault secrets, in generating RoleBindings names, etc.
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:MinItems:=1
+	// Target defines a list of namespaces clusters related to this environment
+	Target []EnvironmentTarget `json:"target,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	ClusterName string `json:"clusterName,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:MinItems:=1
+	Bindings []EnvironmentBindings `json:"bindings,omitempty"`
+}
+
 // ProjectSpec defines the desired state of Project
 type ProjectSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Project. Edit project_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinItems:=1
+	// A project can contains multiple paths
+	Paths []ProjectPath `json:"paths"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:MinItems:=1
+	// A project can contains multiple environments
+	Environments []ProjectEnvironment `json:"environments,omitempty"`
 }
 
 // ProjectStatus defines the observed state of Project
