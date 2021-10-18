@@ -42,12 +42,18 @@ type PathFeature struct {
 
 type ProjectPath struct {
 	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:Pattern:=`^(?:[[:alnum:]-]+\/)+[[:alnum:]-]+$`
 	// The Path attribute should match the pattern ^(?:[[:alnum:]-]+\/)+[[:alnum:]-]+$ where the last [[:alnum:]-]+ is the identifier (e.g. group/sub-group/name)
 	Path string `json:"path"`
 
 	// +kubebuilder:validation:Optional
 	Features PathFeature `json:"features,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	Description string `json:"description,omitempty"`
 }
 
 type BindingSubject struct {
@@ -156,6 +162,8 @@ type ProjectSpec struct {
 type ProjectStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	Conditions []metav1.Condition `json:"conditions"`
 }
 
 //+kubebuilder:object:root=true
