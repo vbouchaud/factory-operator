@@ -140,6 +140,11 @@ spec:
                 description: A project can contains multiple paths
                 items:
                   properties:
+                    archiveondelete:
+                      default: true
+                      description: When service allows for it, archive created resources
+                        instead of deleting them
+                      type: boolean
                     description:
                       type: string
                     features:

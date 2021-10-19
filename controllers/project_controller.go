@@ -94,8 +94,8 @@ func (r *ProjectReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	if !controllerutil.ContainsFinalizer(project, projectFinalizer) {
 		controllerutil.AddFinalizer(project, projectFinalizer)
-		addCondition(logger, project, projectConditionInitialized, metav1.ConditionTrue)
-		addCondition(logger, project, projectConditionConfigured, metav1.ConditionFalse)
+		r.addCondition(logger, project, projectConditionInitialized, metav1.ConditionTrue)
+		r.addCondition(logger, project, projectConditionConfigured, metav1.ConditionFalse)
 		err = r.Update(ctx, project)
 		if err != nil {
 			return ctrl.Result{}, err
@@ -123,7 +123,7 @@ func (r *ProjectReconciler) finalizeProject(l logr.Logger, p *appv1.Project) err
 	return nil
 }
 
-func addCondition(l logr.Logger, p *appv1.Project, c string, s metav1.ConditionStatus) {
+func (r *ProjectReconciler) addCondition(l logr.Logger, p *appv1.Project, c string, s metav1.ConditionStatus) {
 	l.Info("Setting condition %s to %s.", c, s)
 
 	meta.SetStatusCondition(&p.Status.Conditions, metav1.Condition{

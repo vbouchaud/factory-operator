@@ -54,6 +54,11 @@ type ProjectPath struct {
 
 	// +kubebuilder:validation:Optional
 	Description string `json:"description,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=true
+	// When service allows for it, archive created resources instead of deleting them
+	ArchiveOnDelete bool `json:"archiveondelete,omitempty"`
 }
 
 type BindingSubject struct {
