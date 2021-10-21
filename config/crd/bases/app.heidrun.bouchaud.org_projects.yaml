@@ -39,9 +39,12 @@ spec:
               environments:
                 description: A project can contains multiple environments
                 items:
+                  description: ProjectEnvironmentSpec defines the desired state of
+                    ProjectEnvironment
                   properties:
                     bindings:
                       items:
+                        description: BindingSpec defines the desired state of Binding
                         properties:
                           access:
                             properties:
@@ -109,9 +112,7 @@ spec:
                         type: object
                       minItems: 1
                       type: array
-                    clusterName:
-                      type: string
-                    name:
+                    environment:
                       description: Each environment should contain a name. This name
                         will be used when creating vault secrets, in generating RoleBindings
                         names, etc.
@@ -132,13 +133,14 @@ spec:
                       minItems: 1
                       type: array
                   required:
-                  - name
+                  - environment
                   type: object
                 minItems: 1
                 type: array
               paths:
                 description: A project can contains multiple paths
                 items:
+                  description: ProjectPathSpec defines the desired state of ProjectPath
                   properties:
                     archiveondelete:
                       default: true
@@ -166,15 +168,12 @@ spec:
                             if bindings are enabled, policies and user/group mappings
                           type: boolean
                       type: object
-                    name:
-                      type: string
                     path:
                       description: The Path attribute should match the pattern ^(?:[[:alnum:]-]+\/)+[[:alnum:]-]+$
                         where the last [[:alnum:]-]+ is the identifier (e.g. group/sub-group/name)
                       pattern: ^(?:[[:alnum:]-]+\/)+[[:alnum:]-]+$
                       type: string
                   required:
-                  - name
                   - path
                   type: object
                 minItems: 1
@@ -254,8 +253,13 @@ spec:
                   - type
                   type: object
                 type: array
+              paths:
+                items:
+                  type: string
+                type: array
             required:
             - conditions
+            - paths
             type: object
         type: object
     served: true

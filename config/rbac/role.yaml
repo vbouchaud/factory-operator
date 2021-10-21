@@ -9,6 +9,84 @@ rules:
 - apiGroups:
   - app.heidrun.bouchaud.org
   resources:
+  - bindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
+  - bindings/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
+  - bindings/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
+  - projectenvironments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
+  - projectenvironments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
+  - projectenvironments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
+  - projectpaths
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
+  - projectpaths/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
+  - projectpaths/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.heidrun.bouchaud.org
+  resources:
   - projects
   verbs:
   - create

@@ -23,54 +23,61 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// ProjectSpec defines the desired state of Project
-type ProjectSpec struct {
+type EnvironmentTarget struct {
+	// +kubebuilder:validation:Required
+	Namespace string `json:"namespace"`
+
+	// +kubebuilder:validation:Required
+	Cluster string `json:"cluster"`
+}
+
+// ProjectEnvironmentSpec defines the desired state of ProjectEnvironment
+type ProjectEnvironmentSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:MinItems:=1
-	// A project can contains multiple paths
-	Paths []ProjectPathSpec `json:"paths"`
+	// Each environment should contain a name. This name will be used when creating vault secrets, in generating RoleBindings names, etc.
+	Environment string `json:"environment"`
 
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:MinItems:=1
-	// A project can contains multiple environments
-	Environments []ProjectEnvironmentSpec `json:"environments,omitempty"`
+	// Target defines a list of namespaces clusters related to this environment
+	Target []EnvironmentTarget `json:"target,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:MinItems:=1
+	Bindings []BindingSpec `json:"bindings,omitempty"`
 }
 
-// ProjectStatus defines the observed state of Project
-type ProjectStatus struct {
+// ProjectEnvironmentStatus defines the observed state of ProjectEnvironment
+type ProjectEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	Conditions []metav1.Condition `json:"conditions"`
-
-	Paths []string `json:"paths"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:scope=Cluster
 
-// Project is the Schema for the projects API
-type Project struct {
+// ProjectEnvironment is the Schema for the projectenvironments API
+type ProjectEnvironment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ProjectSpec   `json:"spec,omitempty"`
-	Status ProjectStatus `json:"status,omitempty"`
+	Spec   ProjectEnvironmentSpec   `json:"spec,omitempty"`
+	Status ProjectEnvironmentStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// ProjectList contains a list of Project
-type ProjectList struct {
+// ProjectEnvironmentList contains a list of ProjectEnvironment
+type ProjectEnvironmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Project `json:"items"`
+	Items           []ProjectEnvironment `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Project{}, &ProjectList{})
+	SchemeBuilder.Register(&ProjectEnvironment{}, &ProjectEnvironmentList{})
 }

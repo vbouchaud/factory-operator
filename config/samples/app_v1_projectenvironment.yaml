@@ -1,0 +1,7 @@
+apiVersion: app.heidrun.bouchaud.org/v1
+kind: ProjectEnvironment
+metadata:
+  name: projectenvironment-sample
+spec:
+  # Add fields here
+  foo: bar
