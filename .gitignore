@@ -23,3 +23,9 @@ testbin/*
 *.swp
 *.swo
 *~
+
+# local env file
+.env.local
+
+# local test files
+local_test/*

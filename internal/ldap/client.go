@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-ldap/ldap/v3"
+	"reflect"
+	"sort"
+	"strings"
 )
 
 const (
@@ -19,7 +22,7 @@ var scopeMap = map[string]int{
 }
 
 const (
-	objectClass  = "objectCLass"
+	objectClass  = "objectClass"
 	uniqueMember = "uniqueMember"
 	description  = "description"
 
@@ -80,10 +83,10 @@ func (s *Client) bind() (*ldap.Conn, error) {
 	return l, nil
 }
 
-func (s *Client) groupExists(name string) (bool, error) {
+func (s *Client) groupExists(name string) (bool, error, *ldap.Entry) {
 	l, err := s.bind()
 	if err != nil {
-		return false, err
+		return false, err, nil
 	}
 
 	defer l.Close()
@@ -101,16 +104,16 @@ func (s *Client) groupExists(name string) (bool, error) {
 	)
 	result, err := l.Search(searchRequest)
 	if err != nil {
-		return false, err
+		return false, err, nil
 	}
 
 	if len(result.Entries) == 0 {
-		return false, nil
+		return false, nil, nil
 	} else if len(result.Entries) > 1 {
-		return false, fmt.Errorf("too many entries returned")
+		return false, fmt.Errorf("too many entries returned"), nil
 	}
 
-	return true, nil
+	return true, nil, result.Entries[0]
 }
 
 func (s *Client) createGroup(groupDN, desc string, members []string) error {
@@ -173,7 +176,7 @@ func (s *Client) deleteGroup(groupDN string) error {
 func (s *Client) DeleteGroup(name string) error {
 	groupDN := fmt.Sprintf("%s=%s,%s", s.groupNameProperty, name, s.groupSearchBase)
 
-	exists, err := s.groupExists(name)
+	exists, err, _ := s.groupExists(name)
 	if err != nil {
 		return err
 	}
@@ -185,18 +188,35 @@ func (s *Client) DeleteGroup(name string) error {
 	return s.deleteGroup(groupDN)
 }
 
-func (s *Client) ReconcileGroup(name, desc string, members []string) (string, error) {
+func sanitize(a []string) []string {
+	var res []string
+
+	for _, item := range a {
+		res = append(res, strings.ToLower(item))
+	}
+
+	sort.Strings(res)
+
+	return res
+}
+
+func (s *Client) ReconcileGroup(name, desc string, members []string) (string, error, bool) {
 	groupDN := fmt.Sprintf("%s=%s,%s", s.groupNameProperty, name, s.groupSearchBase)
 
-	exists, err := s.groupExists(name)
+	exists, err, entry := s.groupExists(name)
 	if err != nil {
-		return groupDN, err
+		return groupDN, err, false
 	}
 
 	if exists {
-		return groupDN, s.modifyGroup(groupDN, desc, members)
+		changed := entry.GetAttributeValue(description) != desc || !reflect.DeepEqual(sanitize(entry.GetAttributeValues(uniqueMember)), sanitize(members))
+		if changed {
+			return groupDN, s.modifyGroup(groupDN, desc, members), changed
+		}
+		return groupDN, nil, false
 	}
-	return groupDN, s.createGroup(groupDN, desc, members)
+
+	return groupDN, s.createGroup(groupDN, desc, members), true
 }
 
 func IsNotFound(err error) bool {

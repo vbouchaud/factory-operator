@@ -24,12 +24,18 @@ BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
 endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
+# include local env file if any
+ifneq ("$(wildcard .env.local)","")
+	include .env.local
+endif
+.EXPORT_ALL_VARIABLES:
+
 # IMAGE_TAG_BASE defines the docker.io namespace and part of the image name for remote images.
 # This variable is used to construct full image tags for bundle and catalog images.
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
-# heidrun.bouchaud.org/factory-operator-bundle:$VERSION and heidrun.bouchaud.org/factory-operator-catalog:$VERSION.
-IMAGE_TAG_BASE ?= heidrun.bouchaud.org/factory-operator
+# vbouchaud/factory-operator-bundle:$VERSION and vbouchaud/factory-operator-catalog:$VERSION.
+IMAGE_TAG_BASE ?= vbouchaud/factory-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -103,7 +109,11 @@ build: generate fmt vet ## Build manager binary.
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./main.go
+	go run ./main.go \
+	  --ldap-url="$(LDAP_HOST)" \
+	  --bind-dn="$(LDAP_USER)" \
+	  --bind-password="$(LDAP_PASS)" \
+	  --group-search-base="$(LDAP_GROUP_SEARCH_BASE)"
 
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.

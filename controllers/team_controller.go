@@ -114,16 +114,19 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	// Team update
-	team.Status.DistinguishedName, err = r.Ldap.ReconcileGroup(team.Name, team.Spec.Comment, team.Spec.Subjects)
+	var changed bool
+	team.Status.DistinguishedName, err, changed = r.Ldap.ReconcileGroup(team.Name, team.Spec.Comment, team.Spec.Subjects)
 	if err != nil {
 		logger.Error(err, "Failed to crupdate Team resource.", "ldap-group", team.Name)
 		return ctrl.Result{}, err
 	}
 
-	r.addCondition(logger, team, conditionConfigured, metav1.ConditionFalse)
-	if err = r.Update(ctx, team); err != nil {
-		logger.Error(err, "Failed to update Team status.", "ldap-group", team.Name)
-		return ctrl.Result{}, err
+	if changed {
+		r.addCondition(logger, team, conditionConfigured, metav1.ConditionFalse)
+		if err = r.Update(ctx, team); err != nil {
+			logger.Error(err, "Failed to update Team status.", "ldap-group", team.Name)
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil
