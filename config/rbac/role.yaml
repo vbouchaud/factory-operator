@@ -1,4 +1,3 @@
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -9,7 +8,7 @@ rules:
 - apiGroups:
   - app.heidrun.bouchaud.org
   resources:
-  - bindings
+  - teams
   verbs:
   - create
   - delete
@@ -21,91 +20,13 @@ rules:
 - apiGroups:
   - app.heidrun.bouchaud.org
   resources:
-  - bindings/finalizers
+  - teams/finalizers
   verbs:
   - update
 - apiGroups:
   - app.heidrun.bouchaud.org
   resources:
-  - bindings/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projectenvironments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projectenvironments/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projectenvironments/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projectpaths
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projectpaths/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projectpaths/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projects
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projects/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - app.heidrun.bouchaud.org
-  resources:
-  - projects/status
+  - teams/status
   verbs:
   - get
   - patch

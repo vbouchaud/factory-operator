@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright 2022.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -30,6 +31,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	ldapClient "github.com/vbouchaud/factory-operator/internal/ldap"
 
 	appv1 "github.com/vbouchaud/factory-operator/api/v1"
 	"github.com/vbouchaud/factory-operator/controllers"
@@ -49,6 +52,7 @@ func init() {
 }
 
 func main() {
+	// operator related flags:
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
@@ -57,6 +61,25 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+
+	// ldap related flags:
+	var (
+		ldapURL,
+		bindDN,
+		bindPassword,
+		groupSearchBase,
+		groupSearchScope,
+		groupSearchFilter,
+		groupNameProperty string
+		groupSearchAttributes []string
+	)
+	flag.StringVar(&ldapURL, "ldap-url", "", "The address (host and scheme) of the LDAP service.")
+	flag.StringVar(&bindDN, "bind-dn", "", "The service account DN to do the ldap search.")
+	flag.StringVar(&bindPassword, "bind-password", "", "The service account password to authenticate against the LDAP service.")
+	flag.StringVar(&groupSearchBase, "group-search-base", "", "The DN where the ldap search will take place.")
+	flag.StringVar(&groupSearchScope, "group-search-scope", ldapClient.ScopeSingleLevel, fmt.Sprintf("The scope of the search. Can take to values base object: '%s', single level: '%s' or whole subtree: '%s'.", ldapClient.ScopeBaseObject, ldapClient.ScopeSingleLevel, ldapClient.ScopeWholeSubtree))
+	flag.StringVar(&groupSearchFilter, "group-search-filter", "(&(objectClass=groupOfUniqueNames)(cn=%s))", "The filter to select groups.")
+	flag.StringVar(&groupNameProperty, "group-name-property", "cn", "The attribute that contains group names.")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -64,6 +87,17 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	ldap := ldapClient.NewInstance(
+		ldapURL,
+		bindDN,
+		bindPassword,
+		groupSearchBase,
+		groupSearchScope,
+		groupSearchFilter,
+		groupNameProperty,
+		groupSearchAttributes,
+	)
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
@@ -78,32 +112,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ProjectReconciler{
+	if err = (&controllers.TeamReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+
+		// internal
+		Ldap: ldap,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Project")
-		os.Exit(1)
-	}
-	if err = (&controllers.ProjectPathReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ProjectPath")
-		os.Exit(1)
-	}
-	if err = (&controllers.ProjectEnvironmentReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ProjectEnvironment")
-		os.Exit(1)
-	}
-	if err = (&controllers.BindingReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Binding")
+		setupLog.Error(err, "unable to create controller", "controller", "Team")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
