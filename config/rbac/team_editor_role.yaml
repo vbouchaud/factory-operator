@@ -1,20 +1,24 @@
-# permissions for end users to view projects.
+# permissions for end users to edit teams.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: project-viewer-role
+  name: team-editor-role
 rules:
 - apiGroups:
   - app.heidrun.bouchaud.org
   resources:
-  - projects
+  - teams
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - app.heidrun.bouchaud.org
   resources:
-  - projects/status
+  - teams/status
   verbs:
   - get

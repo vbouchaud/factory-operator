@@ -2,7 +2,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: bindings.app.heidrun.bouchaud.org
+  name: teams.app.heidrun.bouchaud.org
 spec:
   conversion:
     strategy: Webhook

@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright 2022.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,54 +23,43 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// ProjectSpec defines the desired state of Project
-type ProjectSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+// TeamSpec defines the desired state of Team
+type TeamSpec struct {
+	Comment string `json:"comment,omitempty"`
 
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinItems:=1
-	// A project can contains multiple paths
-	Paths []ProjectPathSpec `json:"paths"`
-
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:validation:MinItems:=1
-	// A project can contains multiple environments
-	Environments []ProjectEnvironmentSpec `json:"environments,omitempty"`
+	Subjects []string `json:"subjects"`
 }
 
-// ProjectStatus defines the observed state of Project
-type ProjectStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	Conditions []metav1.Condition `json:"conditions"`
-
-	Paths []string `json:"paths"`
+// TeamStatus defines the observed state of Team
+type TeamStatus struct {
+	Conditions        []metav1.Condition `json:"conditions"`
+	DistinguishedName string             `json:"dn,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:scope=Cluster
 
-// Project is the Schema for the projects API
-type Project struct {
+// Team is the Schema for the teams API
+type Team struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ProjectSpec   `json:"spec,omitempty"`
-	Status ProjectStatus `json:"status,omitempty"`
+	Spec   TeamSpec   `json:"spec,omitempty"`
+	Status TeamStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// ProjectList contains a list of Project
-type ProjectList struct {
+// TeamList contains a list of Team
+type TeamList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Project `json:"items"`
+	Items           []Team `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Project{}, &ProjectList{})
+	SchemeBuilder.Register(&Team{}, &TeamList{})
 }
